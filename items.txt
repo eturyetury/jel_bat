@@ -1,0 +1,156 @@
+--[[
+    "B"  =  bomb
+    "AS" =  airstrike
+    "L"  =  laser
+    "M"  =  mine
+    "S"  =  shield
+    "F"  =  freeze
+    "T"  =  teleport
+    "H"  =  health
+    "EJ" =  extra jump
+    "HB" =  handbag
+]]
+
+local gameTiles = require("tiles")
+local gameState = require("gameState")
+local players = require("players")
+local timer = require("timer")
+local buttonLoader = require("buttonLoader")
+
+items = {
+    --[[WEAPONS]]
+    {
+        id = "laser",
+        damage = 30,
+        rarity = 1/15
+    },
+    --[[HEALTH]]
+    {
+        id = "healing",
+        health = 30,
+        rarity = 1/14
+    },
+    --[[BUFFS]]
+    {
+        id = "shield",
+        rarity = 1/7
+    },
+    --[[UTILITIES]]
+    {
+        id = "teleport",
+        rarity = 1/9
+    },
+    --[[TRAPS]]
+    {
+        id = "mine",
+        rarity = 1/5
+    },
+    --[[EMPTY]]
+    {
+        id = " ",
+        rarity = 1/3
+    }
+}
+
+items.storage = {
+    loader  =  {},
+    row1    =  {},
+    row2    =  {},
+    row3    =  {},
+    row4    =  {},
+    row5    =  {}
+}
+
+
+function items.chooseItem()
+    local totalWeight = 0
+    for _, item in ipairs(items) do
+        totalWeight = totalWeight + item.rarity
+    end
+
+    local randomItem = math.random() * totalWeight
+
+    local cumulative = 0
+    for _, item in ipairs(items) do
+        cumulative = cumulative + item.rarity
+        if randomItem <= cumulative then
+            return item
+        end
+    end
+end
+
+function items.assignItems()
+    local rowNames = {"row1", "row2", "row3", "row4", "row5"}
+    for _, rowName in ipairs(rowNames) do
+        items.storage[rowName] = {}
+        for i = 1, 15 do
+            local chosenItem = items.chooseItem()
+            table.insert(items.storage[rowName], chosenItem)
+        end
+    end
+end
+
+items.assignItems()
+
+-- ...existing code...
+
+-- Only fill the first 3 rows at startup
+function items.initRows(numRows)
+    local rowNames = {"row1", "row2", "row3", "row4", "row5"}
+    for i = 1, numRows do
+        items.storage[rowNames[i]] = {}
+        for j = 1, 15 do
+            local chosenItem = items.chooseItem()
+            table.insert(items.storage[rowNames[i]], chosenItem)
+        end
+    end
+end
+
+items.currentRows = 3
+items.initRows(items.currentRows)
+
+function items.advanceRows()
+    -- Shift rows down, drop the last row, add a new row at the top
+    local rowNames = {"row1", "row2", "row3", "row4", "row5"}
+    for i = #rowNames, 2, -1 do
+        items.storage[rowNames[i]] = items.storage[rowNames[i-1]]
+    end
+    -- Fill new row1
+    items.storage.row1 = {}
+    for j = 1, 15 do
+        local chosenItem = items.chooseItem()
+        table.insert(items.storage.row1, chosenItem)
+    end
+    -- Increase currentRows up to 5
+    if items.currentRows < 5 then
+        items.currentRows = items.currentRows + 1
+    end
+end
+
+function items.update(dt)
+    if timer.elapsed == 0 then
+        items.advanceRows()
+        -- Reset or update timer as needed
+    end
+end
+
+function items.draw()
+    -- Draw only the filled rows
+    local rowNames = {"row1", "row2", "row3", "row4", "row5"}
+    local tileIndex = 1
+    for i = 1, items.currentRows do
+        local row = items.storage[rowNames[i]]
+        for j, item in ipairs(row) do
+            local tile = gameTiles.gameButtons[tileIndex]
+            if tile and item then
+                local centerX = tile.x + gameTiles.width / 2
+                local centerY = tile.y + gameTiles.height / 2
+                love.graphics.print(item.id, centerX, centerY)
+            end
+            tileIndex = tileIndex + 1
+        end
+    end
+end
+
+
+return items
