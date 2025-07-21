@@ -106,7 +106,10 @@ end
 items.initRows()
 
 function items.init()
+end
     
+function item.test()
+end
 
 function items.draw()
     local centerX = tile.x + gameTiles.width / 2
