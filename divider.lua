@@ -10,7 +10,7 @@ local d2x = d1x + 982.9147 + 40
 local d2y = sh / 2 - (rectH / 2) - (78.767 / 2) + 44
 
 function divider.draw()
-    love.graphics.line(d1x, d1y, d2x, d2y)
+    love.graphics.line(d1x - 100, d1y - 2, d2x + 100, d2y)
 end
 
 return divider

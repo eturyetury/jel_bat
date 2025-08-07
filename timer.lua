@@ -5,14 +5,17 @@ local timer = {
     y = 25,
     width = 985.9147 / 2,
     duration   =   2.8,
-    elapsed    =   0
-    revolutions = 0
+    elapsed    =   0,
+    revolutions = 0,
+    paused = false
 }
 
 timer.barFull = timer.width
 
 function timer.update(dt)
-    timer.elapsed = timer.elapsed + dt
+    if not timer.paused then 
+        timer.elapsed = timer.elapsed + dt
+    end
     if timer.elapsed >= timer.duration then
         timer.elapsed = 0
         timer.revolutions = timer.revolutions + 1

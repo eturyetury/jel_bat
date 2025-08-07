@@ -20,7 +20,7 @@ local boxY   =   sh / 2 - rectH / 2 - 78.767 / 2
 gameTiles.gameButtons = {}
 gameTiles.gameItems = {}
 
---[[ PLAYER TILES ]]
+--PLAYER TILES
 for row = 0, 4 do
     for col = 0, 14 do
         table.insert(gameTiles.gameButtons, {
@@ -32,7 +32,7 @@ for row = 0, 4 do
     end
 end
 
---[[ ITEM TILES ]]
+--ITEM TILES
 for itemRow =0, 5 do
     for itemCol = 0, 14 do
         table.insert(gameTiles.gameItems, {

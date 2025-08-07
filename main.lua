@@ -1,14 +1,20 @@
-local gameTiles = require("tiles")
-local buttonLoader = require("buttonLoader")
-local divider = require("divider")
-local dots = require("dots")
-local timer = require("timer")
-local timer2 = require("timer2")
-local players = require("players")
+local gameTiles       = require("tiles")
+local buttonLoader    = require("buttonLoader")
+local divider         = require("divider")
+local dots            = require("dots")
+local timer           = require("timer")
+local timer2          = require("timer2")
+local players         = require("players")
+local items           = require("items")
+local health          = require("health")
+local itemEffects     = require("itemEffects")
 
 lg = love.graphics
 
 function love.load()
+    math.randomseed(os.time())
+    math.random(); math.random(); math.random()
+    items.initRows()
     love.graphics.setLineStyle("smooth")
     love.window.setMode(1140, 600)
     sw, sh = love.graphics.getDimensions()
@@ -32,11 +38,22 @@ function love.draw()
     timer.draw()
     timer2.draw()
     players.draw()
-
-
+    health.draw()
+    health.icons()
     --[[
+    items.drawFirstThree()
+    items.draw()
+    ]]
+    items.drawGrid()
+    items.drawLoader()
+    itemEffects.draw()
+
+
+  --[[
+    lg.setLineWidth(1)
     divider.draw()
     ]]
+    
 end
 
 function love.update(dt)
@@ -44,6 +61,11 @@ function love.update(dt)
     timer2.update(dt)
     gameTiles.update(dt)
     players.update(dt)
+
+    if timer.elapsed == 0 then
+        items.advanceRows()
+    end
+    itemEffects.update(dt)
 end
 
 function love.mousepressed(x, y, button)
