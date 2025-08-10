@@ -9,6 +9,7 @@
     "H"  =  health
     "EJ" =  extra jump
     "HB" =  handbag
+    "I"  =  invisible
 ]]
 
 local gameTiles = require("tiles")

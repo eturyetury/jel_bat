@@ -3,6 +3,7 @@ local players = require("players")
 local tiles = require("tiles")
 local gameState = require("gameState")
 local timer = require("timer")
+local anim8 = require("Libraries/anim8")
 
 lg = love.graphics
 
@@ -39,6 +40,8 @@ function itemEffects.update(dt)
             laserTimer = 0
         end
     end
+
+
 end
 
 return itemEffects
