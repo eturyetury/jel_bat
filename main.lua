@@ -45,7 +45,6 @@ function love.draw()
     items.drawLoader()
     --itemEffects.draw()
     lasers.draw()
-    
 end
 
 function love.update(dt)

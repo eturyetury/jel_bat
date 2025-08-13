@@ -40,8 +40,6 @@ function itemEffects.update(dt)
             laserTimer = 0
         end
     end
-
-
 end
 
 return itemEffects

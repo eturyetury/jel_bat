@@ -31,7 +31,7 @@ local items = {
     {
         id = "laser",
         damage = 30,
-        rarity = 1/20,
+        rarity = 1/2,
         color = colors.blue
     },
     -- HEALTH
@@ -109,7 +109,6 @@ end
 items.usedTiles = {} -- tracks tiles used by players
 
 function items.initRows() -- progressively initializes rows
-
     -- fill loader, row1, row2 at startup
     items.storage.loader = items.makeRow(15)
     items.storage.row1 = items.makeRow(15)
@@ -127,7 +126,6 @@ end
 items.initRows()
 
 function items.advanceRows() -- row move down
-    
     local s = items.storage
 
     s.row5 = nil                   -- delete bottom row
