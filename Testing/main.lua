@@ -1,176 +1,155 @@
-local anim8 = require("Libraries/anim8")
-lg = love.graphics
-startAnimDone  =  false
-idleAnimStart  =  false
-idleAnimDone   =  false
-animDone       =  false
-local timer = 0
+-- Simple Rogue-like Dungeon Generator for LÖVE2D
+local WALL = 1
+local FLOOR = 0
+local CORRIDOR = 2
+
+local dungeon = {}
+local rooms = {}
+local WIDTH = 80
+local HEIGHT = 25
+local MIN_ROOM_SIZE = 3
+local MAX_ROOM_SIZE = 8
+local MAX_ROOMS = 12
 
 function love.load()
-    love.graphics.setLineStyle("smooth")
-    love.window.setMode(1140, 600)
-    sw, sh = love.graphics.getDimensions()
-    
-    --UP LASER
-    laserUp = {}
-        laserUp.spritesheet = lg.newImage("Sprites/Lazers/laser_Beam_Spritesheet_INVERTED_WHITE.png")
-        laserUp.spritesheet:setFilter("nearest", "nearest")
-        laserUp.grid = anim8.newGrid( 48, 48, laserUp.spritesheet:getWidth(), laserUp.spritesheet:getHeight() )
-        laserUp.playSpeed  = 0.05
-        laserUp.dimensionsX, laserUp.dimensionsY = laserUp.spritesheet:getDimensions()
-        laserUp.scale = 3
-        laserUp.startOffset = 96
-        laserUp.bodyOffset = 144
-        laserUp.tooManyOffsets = 48
-        laserUp.x = sw / 2 + ((48 * laserUp.scale) / 2)
-        laserUp.y = sh - laserUp.startOffset
-
-    laserUp.animations = {}
-        laserUp.animations.startHandle  =  anim8.newAnimation( laserUp.grid('1-4', 6), laserUp.playSpeed )
-        laserUp.animations.startBody    =  anim8.newAnimation( laserUp.grid('1-4', 4), laserUp.playSpeed )
-        laserUp.animations.startTip     =  anim8.newAnimation( laserUp.grid('1-4', 2), laserUp.playSpeed )
-        laserUp.animations.idleHandle   =  anim8.newAnimation( laserUp.grid('1-4', 5), laserUp.playSpeed )
-        laserUp.animations.idleBody     =  anim8.newAnimation( laserUp.grid('1-4', 3), laserUp.playSpeed )
-        laserUp.animations.idleTip      =  anim8.newAnimation( laserUp.grid('1-4', 1), laserUp.playSpeed )
-        laserUp.animations.endHandle    =  anim8.newAnimation( laserUp.grid('4-1', 6), laserUp.playSpeed )
-        laserUp.animations.endBody      =  anim8.newAnimation( laserUp.grid('4-1', 4), laserUp.playSpeed )
-        laserUp.animations.endTip       =  anim8.newAnimation( laserUp.grid('4-1', 2), laserUp.playSpeed )
-
-    --DOWN LASER
-    laserDown = {}
-        laserDown.spritesheet = lg.newImage("Sprites/Lazers/laser_Beam_Spritesheet_INVERTED_WHITE.png")
-        laserDown.spritesheet:setFilter("nearest", "nearest")
-        laserDown.grid = anim8.newGrid( 48, 48, laserDown.spritesheet:getWidth(), laserDown.spritesheet:getHeight() )
-        laserDown.playSpeed  = 0.05
-        laserDown.dimensionsX, laserDown.dimensionsY = laserDown.spritesheet:getDimensions()
-        laserDown.scale = 3
-        laserDown.startOffset = 96
-        laserDown.bodyOffset = 144
-        laserDown.tooManyOffsets = 48
-        laserDown.x = sw / 2 - ((48 * laserDown.scale) / 2) -- Positioned to the left of the up laser
-        laserDown.y = laserDown.startOffset -- Starting from the top
-
-    laserDown.animations = {}
-        laserDown.animations.startHandle  =  anim8.newAnimation( laserDown.grid('1-4', 6), laserDown.playSpeed )
-        laserDown.animations.startBody    =  anim8.newAnimation( laserDown.grid('1-4', 4), laserDown.playSpeed )
-        laserDown.animations.startTip     =  anim8.newAnimation( laserDown.grid('1-4', 2), laserDown.playSpeed )
-        laserDown.animations.idleHandle   =  anim8.newAnimation( laserDown.grid('1-4', 5), laserDown.playSpeed )
-        laserDown.animations.idleBody     =  anim8.newAnimation( laserDown.grid('1-4', 3), laserDown.playSpeed )
-        laserDown.animations.idleTip      =  anim8.newAnimation( laserDown.grid('1-4', 1), laserDown.playSpeed )
-        laserDown.animations.endHandle    =  anim8.newAnimation( laserDown.grid('4-1', 6), laserDown.playSpeed )
-        laserDown.animations.endBody      =  anim8.newAnimation( laserDown.grid('4-1', 4), laserDown.playSpeed )
-        laserDown.animations.endTip       =  anim8.newAnimation( laserDown.grid('4-1', 2), laserDown.playSpeed )
+    love.window.setTitle("Rogue-like Dungeon Generator")
+    math.randomseed(os.time())
+    generateDungeon()
 end
 
-function love.update(dt)
-    timer = timer + dt
+function generateDungeon()
+    -- Initialize dungeon with walls
+    dungeon = {}
+    rooms = {}
     
-    if not startAnimDone then
-        -- Update UP laser animations
-        laserUp.animations.startHandle:update(dt)
-        laserUp.animations.startBody:update(dt)
-        laserUp.animations.startTip:update(dt)
-        
-        -- Update DOWN laser animations
-        laserDown.animations.startHandle:update(dt)
-        laserDown.animations.startBody:update(dt)
-        laserDown.animations.startTip:update(dt)
-        
-        if laserUp.animations.startHandle.position == #laserUp.animations.startHandle.frames then
-            startAnimDone = true
-            idleAnimStart = true
+    for y = 1, HEIGHT do
+        dungeon[y] = {}
+        for x = 1, WIDTH do
+            dungeon[y][x] = WALL
         end
     end
     
-    if idleAnimStart and not idleAnimDone then
-        -- Update UP laser animations
-        laserUp.animations.idleHandle:update(dt)
-        laserUp.animations.idleBody:update(dt)
-        laserUp.animations.idleTip:update(dt)
+    -- Generate rooms
+    for i = 1, MAX_ROOMS do
+        local w = math.random(MIN_ROOM_SIZE, MAX_ROOM_SIZE)
+        local h = math.random(MIN_ROOM_SIZE, MAX_ROOM_SIZE)
+        local x = math.random(1, WIDTH - w - 1)
+        local y = math.random(1, HEIGHT - h - 1)
         
-        -- Update DOWN laser animations
-        laserDown.animations.idleHandle:update(dt)
-        laserDown.animations.idleBody:update(dt)
-        laserDown.animations.idleTip:update(dt)
-       
-        if timer >= 0.75 then
-            idleAnimDone = true
+        local newRoom = {x = x, y = y, w = w, h = h}
+        
+        -- Check if room overlaps with existing rooms
+        local overlaps = false
+        for _, room in ipairs(rooms) do
+            if roomsOverlap(newRoom, room) then
+                overlaps = true
+                break
+            end
+        end
+        
+        if not overlaps then
+            table.insert(rooms, newRoom)
+            carveRoom(newRoom)
+            
+            -- Connect to previous room with corridor
+            if #rooms > 1 then
+                connectRooms(rooms[#rooms-1], newRoom)
+            end
         end
     end
+end
+
+function roomsOverlap(room1, room2)
+    return not (room1.x + room1.w < room2.x or 
+                room2.x + room2.w < room1.x or
+                room1.y + room1.h < room2.y or
+                room2.y + room2.h < room1.y)
+end
+
+function carveRoom(room)
+    for y = room.y, room.y + room.h - 1 do
+        for x = room.x, room.x + room.w - 1 do
+            if x >= 1 and x <= WIDTH and y >= 1 and y <= HEIGHT then
+                dungeon[y][x] = FLOOR
+            end
+        end
+    end
+end
+
+function connectRooms(room1, room2)
+    -- Get center points of rooms
+    local x1 = math.floor(room1.x + room1.w / 2)
+    local y1 = math.floor(room1.y + room1.h / 2)
+    local x2 = math.floor(room2.x + room2.w / 2)
+    local y2 = math.floor(room2.y + room2.h / 2)
     
-    if idleAnimDone and not animDone then
-        -- Update UP laser animations
-        laserUp.animations.endHandle:update(dt)
-        laserUp.animations.endBody:update(dt)
-        laserUp.animations.endTip:update(dt)
-        
-        -- Update DOWN laser animations
-        laserDown.animations.endHandle:update(dt)
-        laserDown.animations.endBody:update(dt)
-        laserDown.animations.endTip:update(dt)
-        
-        if laserUp.animations.endHandle.position == #laserUp.animations.endHandle.frames then
-            animDone = true
+    -- Create L-shaped corridor
+    if math.random() < 0.5 then
+        -- Horizontal first, then vertical
+        carveCorridor(x1, y1, x2, y1) -- horizontal
+        carveCorridor(x2, y1, x2, y2) -- vertical
+    else
+        -- Vertical first, then horizontal
+        carveCorridor(x1, y1, x1, y2) -- vertical
+        carveCorridor(x1, y2, x2, y2) -- horizontal
+    end
+end
+
+function carveCorridor(x1, y1, x2, y2)
+    local dx = x1 < x2 and 1 or -1
+    local dy = y1 < y2 and 1 or -1
+    
+    if x1 == x2 then
+        -- Vertical corridor
+        for y = y1, y2, dy do
+            if y >= 1 and y <= HEIGHT and x1 >= 1 and x1 <= WIDTH then
+                if dungeon[y][x1] == WALL then
+                    dungeon[y][x1] = CORRIDOR
+                end
+            end
+        end
+    else
+        -- Horizontal corridor
+        for x = x1, x2, dx do
+            if x >= 1 and x <= WIDTH and y1 >= 1 and y1 <= HEIGHT then
+                if dungeon[y1][x] == WALL then
+                    dungeon[y1][x] = CORRIDOR
+                end
+            end
         end
     end
 end
 
 function love.draw()
-    -- Draw UP LASER
-    if not startAnimDone then
-        laserUp.animations.startHandle:draw(laserUp.spritesheet, laserUp.x, laserUp.y, 1.5708, laserUp.scale, laserUp.scale)
-        local offset = laserUp.tooManyOffsets
-        for i = 0, 20 do
-            laserUp.animations.startBody:draw(laserUp.spritesheet, laserUp.x, laserUp.y - offset, 1.5708, laserUp.scale, laserUp.scale)
-            offset = offset + laserUp.tooManyOffsets
+    local tileSize = 8
+    
+    for y = 1, HEIGHT do
+        for x = 1, WIDTH do
+            local screenX = (x - 1) * tileSize
+            local screenY = (y - 1) * tileSize
+            
+            if dungeon[y][x] == WALL then
+                love.graphics.setColor(0.3, 0.3, 0.3) -- Dark gray
+            elseif dungeon[y][x] == FLOOR then
+                love.graphics.setColor(0.8, 0.8, 0.8) -- Light gray
+            else -- CORRIDOR
+                love.graphics.setColor(0.6, 0.6, 0.6) -- Medium gray
+            end
+            
+            love.graphics.rectangle("fill", screenX, screenY, tileSize, tileSize)
         end
-        laserUp.animations.startTip:draw(laserUp.spritesheet, laserUp.x, laserUp.y - offset, 1.5708, laserUp.scale, laserUp.scale)
-        
-    elseif idleAnimStart and not idleAnimDone then
-        laserUp.animations.idleHandle:draw(laserUp.spritesheet, laserUp.x, laserUp.y, 1.5708, laserUp.scale, laserUp.scale)
-        local offset = laserUp.tooManyOffsets
-        for i = 0, 20 do
-            laserUp.animations.idleBody:draw(laserUp.spritesheet, laserUp.x, laserUp.y - offset, 1.5708, laserUp.scale, laserUp.scale)
-            offset = offset + laserUp.tooManyOffsets
-        end
-        laserUp.animations.idleTip:draw(laserUp.spritesheet, laserUp.x, laserUp.y - offset, 1.5708, laserUp.scale, laserUp.scale)
-        
-    elseif idleAnimDone and not animDone then
-        laserUp.animations.endHandle:draw(laserUp.spritesheet, laserUp.x, laserUp.y, 1.5708, laserUp.scale, laserUp.scale)
-        local offset = laserUp.tooManyOffsets
-        for i = 0, 20 do
-            laserUp.animations.endBody:draw(laserUp.spritesheet, laserUp.x, laserUp.y - offset, 1.5708, laserUp.scale, laserUp.scale)
-            offset = offset + laserUp.tooManyOffsets
-        end
-        laserUp.animations.endTip:draw(laserUp.spritesheet, laserUp.x, laserUp.y - offset, 1.5708, laserUp.scale, laserUp.scale)
     end
+    
+    -- Instructions
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.print("Press SPACE to generate new dungeon", 10, HEIGHT * 8 + 10)
+    love.graphics.print("Rooms: " .. #rooms, 10, HEIGHT * 8 + 30)
+end
 
-    -- Draw DOWN LASER (flipped to shoot downward)
-    if not startAnimDone then
-        laserDown.animations.startHandle:draw(laserDown.spritesheet, laserDown.x, laserDown.y, -1.5708, laserDown.scale, laserDown.scale)
-        local offset = laserDown.tooManyOffsets
-        for i = 0, 20 do
-            laserDown.animations.startBody:draw(laserDown.spritesheet, laserDown.x, laserDown.y + offset, -1.5708, laserDown.scale, laserDown.scale)
-            offset = offset + laserDown.tooManyOffsets
-        end
-        laserDown.animations.startTip:draw(laserDown.spritesheet, laserDown.x, laserDown.y + offset, -1.5708, laserDown.scale, laserDown.scale)
-        
-    elseif idleAnimStart and not idleAnimDone then
-        laserDown.animations.idleHandle:draw(laserDown.spritesheet, laserDown.x, laserDown.y, -1.5708, laserDown.scale, laserDown.scale)
-        local offset = laserDown.tooManyOffsets
-        for i = 0, 20 do
-            laserDown.animations.idleBody:draw(laserDown.spritesheet, laserDown.x, laserDown.y + offset, -1.5708, laserDown.scale, laserDown.scale)
-            offset = offset + laserDown.tooManyOffsets
-        end
-        laserDown.animations.idleTip:draw(laserDown.spritesheet, laserDown.x, laserDown.y + offset, -1.5708, laserDown.scale, laserDown.scale)
-        
-    elseif idleAnimDone and not animDone then
-        laserDown.animations.endHandle:draw(laserDown.spritesheet, laserDown.x, laserDown.y, -1.5708, laserDown.scale, laserDown.scale)
-        local offset = laserDown.tooManyOffsets
-        for i = 0, 20 do
-            laserDown.animations.endBody:draw(laserDown.spritesheet, laserDown.x, laserDown.y + offset, -1.5708, laserDown.scale, laserDown.scale)
-            offset = offset + laserDown.tooManyOffsets
-        end
-        laserDown.animations.endTip:draw(laserDown.spritesheet, laserDown.x, laserDown.y + offset, -1.5708, laserDown.scale, laserDown.scale)
+function love.keypressed(key)
+    if key == "space" then
+        generateDungeon()
+    elseif key == "escape" then
+        love.event.quit()
     end
 end

@@ -52,7 +52,7 @@ function love.update(dt)
     gameTiles.update(dt)
     players.update(dt)
 
-    if timer.elapsed == 0 then
+    if timer.elapsed == 0 and not timer.paused then
         items.advanceRows()
     end
     lasers.update(dt)

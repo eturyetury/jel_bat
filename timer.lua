@@ -52,8 +52,11 @@ function timer.update(dt)
     else
         timer.currentX = timer.x
     end
+    
+    if not timer.paused then
+        timer2.elapsed = timer2.elapsed + dt
+    end
 
-    timer2.elapsed = timer2.elapsed + dt
     if timer2.elapsed >= timer2.duration then
         timer2.elapsed = 0
     end

@@ -23,7 +23,7 @@ function lasers.load()
    
     -- LEFT LASER
     laserLeft = {}
-        laserLeft.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_WHITE.png")
+        laserLeft.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_INVERTED_WHITE.png")
         laserLeft.spritesheet:setFilter("nearest", "nearest")
         laserLeft.grid = anim8.newGrid( 48, 48, laserLeft.spritesheet:getWidth(), laserLeft.spritesheet:getHeight() )
         laserLeft.playSpeed = 0.05
@@ -48,7 +48,7 @@ function lasers.load()
 
     -- RIGHT LASER
     laserRight = {}
-        laserRight.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_WHITE.png")
+        laserRight.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_INVERTED_WHITE.png")
         laserRight.spritesheet:setFilter("nearest", "nearest")
         laserRight.grid = anim8.newGrid( 48, 48, laserRight.spritesheet:getWidth(), laserRight.spritesheet:getHeight() )
         laserRight.playSpeed = 0.05
@@ -73,7 +73,7 @@ function lasers.load()
 
     -- UP LASER
     laserUp = {}
-        laserUp.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_WHITE.png")
+        laserUp.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_INVERTED_WHITE.png")
         laserUp.spritesheet:setFilter("nearest", "nearest")
         laserUp.grid = anim8.newGrid( 48, 48, laserUp.spritesheet:getWidth(), laserUp.spritesheet:getHeight() )
         laserUp.playSpeed  = 0.05
@@ -98,7 +98,7 @@ function lasers.load()
 
     -- DOWN LASER
     laserDown = {}
-        laserDown.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_WHITE.png")
+        laserDown.spritesheet = lg.newImage("Sprites/Lazers/Laser_Beam_Spritesheet_INVERTED_WHITE.png")
         laserDown.spritesheet:setFilter("nearest", "nearest")
         laserDown.grid = anim8.newGrid( 48, 48, laserDown.spritesheet:getWidth(), laserDown.spritesheet:getHeight() )
         laserDown.playSpeed  = 0.05
@@ -197,6 +197,7 @@ function lasers.update(dt)
             if not activated then 
                 lasers.resetLaserAnimation()
                 activated = true
+                timer.pause()
             end
         end
     end
@@ -281,6 +282,7 @@ function lasers.update(dt)
             if laserLeft.animations.endHandle.position == #laserLeft.animations.endHandle.frames then
                 animDone = true
                 lasers.resetLaserAnimation()
+                timer.resume()
             end
         end
     end
